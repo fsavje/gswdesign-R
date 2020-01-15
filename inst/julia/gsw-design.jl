@@ -20,16 +20,18 @@
 # along with this program. If not, see http://www.gnu.org/licenses/
 # ==============================================================================
 
-function sample_gs_walk(X; alpha=0.5, treatment_probs = 0.5*ones(size(X,1)), balanced=false, num_samples=1)
+function sample_gs_walk(X; lam=0.5, treatment_probs = 0.5*ones(size(X,1)), balanced=false, num_samples=1)
     """
     # sample_gs_walk
     # An fast implementation for sampling from the Gram-Schmidt Walk Design.
     # Maintains a cholesky factorization of (I + X * X^T ) for faster repeated linear system solves
     # and has a recursive component for more effective memory allocation.
     #
+    # The covariate matrix is automatically scaled so max covariate norm is 1.
+    #
     # Input
     # 	X               an n by d matrix which has the covariate vectors x_1, x_2 ... x_n as rows
-    #   alpha           a real value in (0,1) specifying weight
+    #   lam           a real value in (0,1) specifying weight
     #   treatment_probs an n length vector of treatment probabilities, entries in [0,1]
     #   balanced        set `true` to run the balanced GSW; otherwise, leave false
     #   num_samples     the number of samples to draw
@@ -41,11 +43,15 @@ function sample_gs_walk(X; alpha=0.5, treatment_probs = 0.5*ones(size(X,1)), bal
     # transpose the covariate matrix so it has covariates as columns (this is a quick fix)
     Xt = X'
 
-    # get the dimensions
+    # get the dimensions, re-scale so covariate norm is equal to 1
     d, n = size(Xt)
+    max_norm = maximum([norm(Xt[:,i]) for i=1:n])
+    if max_norm > eps()
+        Xt ./= max_norm
+    end
 
     # pre-processing: compute cholesky factorization of I + (1-a) X X^T
-    M = (alpha / (1-alpha)) * I +  (Xt * Xt')
+    M = (lam / (1-lam)) * I +  (Xt * Xt')
     MC = cholesky(M)
 
     # compute sum of covariances if necessary
@@ -63,7 +69,7 @@ function sample_gs_walk(X; alpha=0.5, treatment_probs = 0.5*ones(size(X,1)), bal
     for i=1:num_samples
 
         # run the recursive version of the walk
-        z = _gs_walk_recur(Xt, MC, copy(z0), alpha, balanced, cov_sum)
+        z = _gs_walk_recur(Xt, copy(MC), copy(z0), lam, balanced, cov_sum)
 
         # transform z from +/- 1 to an assignment vector in 0/1
         for j=1:n
@@ -73,7 +79,7 @@ function sample_gs_walk(X; alpha=0.5, treatment_probs = 0.5*ones(size(X,1)), bal
     return assignment_list
 end
 
-function _gs_walk_recur(X, MC, z, alpha, balanced, cov_sum)
+function _gs_walk_recur(X, MC, z, lam, balanced, cov_sum)
     """
     # _gs_walk_recur
     # Carries out the iterative procedure of the Gram--Schmidt walk.
@@ -84,7 +90,7 @@ function _gs_walk_recur(X, MC, z, alpha, balanced, cov_sum)
     # 	X           an d by n matrix which has the covariate vectors x_1, x_2 ... x_n as columns
     #   MC          the relevant cholesky factorization
     #   z           the starting point of the walk. This value is modified in place.
-    #   alpha           a real value in (0,1) specifying weight
+    #   lam           a real value in (0,1) specifying weight
     #   balanced        set `true` to run the balanced GSW; otherwise, leave false
     #
     # Output
@@ -121,7 +127,7 @@ function _gs_walk_recur(X, MC, z, alpha, balanced, cov_sum)
 
             if num_frozen >= targ_frozen
                 # println("recur: $(n), $(num_frozen), $(targ_frozen)")
-                y = _gs_walk_recur(X[:,live_not_pivot], MC, z[live_not_pivot], alpha, balanced, cov_sum)
+                y = _gs_walk_recur(X[:,live_not_pivot], MC, z[live_not_pivot], lam, balanced, cov_sum)
                 z[live_not_pivot] = y
                 break
             end
@@ -143,14 +149,14 @@ function _gs_walk_recur(X, MC, z, alpha, balanced, cov_sum)
 
         # Here is a description of the a, more clearly outlined in paper
         #   a(0) = X_k X_k' * z_p                                   O(d^2) using factorization
-        #   a(1) = inv( alpha/(1-alpha) * I + X_k' * X_k ) * a(0)   O(d^2) using factorization
-        #   a(2) = (1-alpha)/(alpha) [ a(1) - v_p]                  O(d)
+        #   a(1) = inv( lam/(1-lam) * I + X_k' * X_k ) * a(0)   O(d^2) using factorization
+        #   a(2) = (1-lam)/(lam) [ a(1) - v_p]                  O(d)
         #   a(3) = X_k * a(2)                                       O(nd) matrix-vector multiplication
 
-        a = (MC.L * (MC.U * X[:,p])) - (alpha / (1-alpha)) * X[:,p] # a(0)
+        a = (MC.L * (MC.U * X[:,p])) - (lam / (1-lam)) * X[:,p] # a(0)
         ldiv!(MC, a)                                                # a(1)
 
-        mult_val = (1 - alpha) / alpha                              # a(2), in place
+        mult_val = (1 - lam) / lam                              # a(2), in place
         for i=1:length(a)
             a[i] = mult_val * (a[i] - X[i,p])
         end
@@ -160,15 +166,15 @@ function _gs_walk_recur(X, MC, z, alpha, balanced, cov_sum)
 
             # Here is a description of the b, more clearly outline in the paper
             #   b(0) = X_k' * 1                                         O(1) look-up (pre-computed)
-            #   b(1) = inv( alpha/(1-alpha) * I + X_k' * X_k ) * b(0)   O(d^2) using factorization
+            #   b(1) = inv( lam/(1-lam) * I + X_k' * X_k ) * b(0)   O(d^2) using factorization
             #   b(2) = X_k * b(1)                                       O(nd) matrix-vector multiplication
-            #   b(3) = (b(2) - 1) / (2 * alpha)                         O(n)
+            #   b(3) = (b(2) - 1) / (2 * lam)                         O(n)
 
             b = copy(cov_sum)               # b(0)
             ldiv!(MC, b)                    # b(1)
             b = (X' * b)[live_not_pivot]    # b(2)
 
-            div_val = 2*alpha               # b(3), in place
+            div_val = 2*lam               # b(3), in place
             for i=1:length(b)
                 b[i] = (b[i] - 1) / div_val
             end

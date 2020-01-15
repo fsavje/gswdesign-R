@@ -46,7 +46,7 @@ sample_gsw <- function(X, lambda = 0.5, balanced = FALSE, num_samples = 1L) {
 
   gsw_arg <- list(
     X,
-    "alpha" = lambda,
+    "lam" = lambda,
     "balanced" = balanced,
     "num_samples" = num_samples
   )
