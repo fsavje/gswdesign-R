@@ -29,10 +29,10 @@
 #'    a n-by-x matrix with covariates to balance
 #' @param lambda
 #'    a real value in (0,1) specifying weight
-#' @param verbose
-#'    set to true to print out algorithm state
 #' @param balanced
 #'    set true to run the balanced GSW
+#' @param num_samples
+#'    number of treatment assignments to sample
 #'
 #' @examples
 #' \dontrun{
@@ -42,13 +42,13 @@
 #' }
 #'
 #' @export
-sample_gsw <- function(X, lambda = 0.5, verbose = FALSE, balanced = FALSE) {
+sample_gsw <- function(X, lambda = 0.5, balanced = FALSE, num_samples = 1L) {
 
   gsw_arg <- list(
-    t(X),
+    X,
     "alpha" = lambda,
-    "verbose" = verbose,
-    "balanced" = balanced
+    "balanced" = balanced,
+    "num_samples" = num_samples
   )
 
   .gsw_intenv$julia$do.call("sample_gs_walk", gsw_arg, need_return = "R")
