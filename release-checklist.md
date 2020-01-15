@@ -5,7 +5,6 @@
 * Run `devtools::load_all()`, `devtools::test()` and `devtools::check()`
 * Update package information
     - Set new version number in `DESCRIPTION`
-    - Set release date in `DESCRIPTION`
     - Change "distances devel" to "distances VERSION" in `NEWS.md`
     - Update travis and appveyor with current versions
     - Update `cran-comments.md` with correct information
