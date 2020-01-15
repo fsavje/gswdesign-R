@@ -13,7 +13,7 @@ Description:
     See <https://github.com/fsavje/gswdesign-R> for more information.
 SystemRequirements: Julia (>= 1.0.5), Random.jl, LinearAlgebra.jl
 Depends:
-    R (>= 3.4.0)
+    R (>= 3.5.0)
 Imports:
     JuliaCall
 Suggests:
