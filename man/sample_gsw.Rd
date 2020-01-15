@@ -4,16 +4,16 @@
 \alias{sample_gsw}
 \title{Sample from the Gram-Schmidt Walk design.}
 \usage{
-sample_gsw(X, lambda = 0.5, verbose = FALSE, balanced = FALSE)
+sample_gsw(X, lambda = 0.5, balanced = FALSE, num_samples = 1L)
 }
 \arguments{
 \item{X}{a n-by-x matrix with covariates to balance}
 
 \item{lambda}{a real value in (0,1) specifying weight}
 
-\item{verbose}{set to true to print out algorithm state}
-
 \item{balanced}{set true to run the balanced GSW}
+
+\item{num_samples}{number of treatment assignments to sample}
 }
 \description{
 An fast implementation for sampling from the Gram-Schmidt Walk Design.
