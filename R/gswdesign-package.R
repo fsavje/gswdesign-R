@@ -19,21 +19,26 @@
 # along with this program. If not, see http://www.gnu.org/licenses/
 # ==============================================================================
 
-# Internal environment
+# Internal environment and const
 .gsw_intenv <- new.env(parent = emptyenv())
+.min_julia_version <- "1.0.5"
+.min_GSWDesign_version <- "0.1.0"
 
 #' gswdesign: The Gram-Schmidt walk design
 #'
-#' Provides wrappers for the julia package 'gswdesign', which is a
-#' computationally efficient implementation of the Gram-Schmidt walk design.
+#' Provides wrappers for the Julia package 'GSWDesign', which is a fast
+#' implementation of the Gram--Schmidt Walk for balancing covariates in
+#' randomized experiments. The Gram--Schmidt Walk design allows experimenters
+#' the flexibilty to control the amount of covariate balancing.
 #'
-#' See \code{\link{sample_gsw}} for the main function.
+#' See \code{\link{sample_gs_walk}} for the main function.
 #'
-#' See the package's website for more information:
-#' \url{https://github.com/xxx/xxx}.
+#' See the packages' websites for more information:
+#' \url{https://github.com/crharshaw/GSWDesign.jl},
+#' \url{https://github.com/fsavje/gswdesign-R}.
 #'
 #' Bug reports and suggestions are greatly appreciated. They are best reported
-#' here: \url{https://github.com/xxx/xxx/issues}.
+#' here: \url{https://github.com/fsavje/gswdesign-R/issues}.
 #'
 #' @references
 #'    Harshaw, Christopher and Fredrik Sävje and Daniel Spielman and Peng Zhang (2019),
@@ -67,9 +72,66 @@ NULL
 #' @export
 gswdesign_setup <- function(...) {
   .gsw_intenv$julia <- JuliaCall::julia_setup(...)
-  .gsw_intenv$julia$install_package_if_needed("LinearAlgebra")
+
+  if (utils::compareVersion(.gsw_intenv$julia$VERSION, .min_julia_version) == -1L) {
+    .gsw_intenv <- new.env(parent = emptyenv())
+    stop("Julia is out of date. Please update and rerun 'gswdesign_setup()'.")
+  }
+
   .gsw_intenv$julia$install_package_if_needed("Random")
-  .gsw_intenv$julia$library("LinearAlgebra")
+  .gsw_intenv$julia$install_package_if_needed("https://github.com/crharshaw/GSWDesign.jl")
+
+  gsw_version <- .gsw_intenv$julia$installed_package("GSWDesign")
+
+  if (gsw_version == "nothing")
+    stop("Julia package 'GSWDesign' not found.")
+
+  if (utils::compareVersion(gsw_version, .min_GSWDesign_version) == -1L)
+    stop("Julia package 'GSWDesign' is out of date. Please update by running 'gswdesign_update()'.")
+
   .gsw_intenv$julia$library("Random")
-  .gsw_intenv$julia$source(system.file("julia/gsw-design.jl", package = "gswdesign"))
+  .gsw_intenv$julia$library("GSWDesign")
+}
+
+
+#' Update GSWDesign package in Julia
+#'
+#' \code{gswdesign_update} updates the GSWDesign Julia package.
+#'
+#' @examples
+#' \dontrun{
+#' gswdesign_setup()
+#' gswdesign_update()
+#' }
+#'
+#' @export
+gswdesign_update <- function() {
+  if(!julia_running())
+    stop("Julia is not running. Please call 'gswdesign_setup()'.")
+
+  .gsw_intenv$julia$update_package("https://github.com/crharshaw/GSWDesign.jl")
+
+  gsw_version <- .gsw_intenv$julia$installed_package("GSWDesign")
+
+  if (gsw_version == "nothing")
+    stop("Julia package 'GSWDesign' not found.")
+
+  if (utils::compareVersion(gsw_version, .min_GSWDesign_version) == -1L)
+    stop("Julia package 'GSWDesign' is out of date. Please update by running 'gswdesign_update()'.")
+
+  .gsw_intenv$julia$library("Random")
+  .gsw_intenv$julia$library("GSWDesign")
+}
+
+#' Check so Julia is setup and running
+#'
+#' \code{julia_running} checks so Julia is running and can be called.
+#'
+#' @examples
+#' \dontrun{
+#' julia_running()
+#' }
+#'
+julia_running <- function() {
+  isTRUE(.gsw_intenv$julia$eval("true"))
 }

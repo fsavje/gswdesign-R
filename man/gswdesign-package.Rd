@@ -5,17 +5,20 @@
 \alias{gswdesign-package}
 \title{gswdesign: The Gram-Schmidt walk design}
 \description{
-Provides wrappers for the julia package 'gswdesign', which is a
-computationally efficient implementation of the Gram-Schmidt walk design.
+Provides wrappers for the Julia package 'GSWDesign', which is a fast
+implementation of the Gram--Schmidt Walk for balancing covariates in
+randomized experiments. The Gram--Schmidt Walk design allows experimenters
+the flexibilty to control the amount of covariate balancing.
 }
 \details{
-See \code{\link{sample_gsw}} for the main function.
+See \code{\link{sample_gs_walk}} for the main function.
 
-See the package's website for more information:
-\url{https://github.com/xxx/xxx}.
+See the packages' websites for more information:
+\url{https://github.com/crharshaw/GSWDesign.jl},
+\url{https://github.com/fsavje/gswdesign-R}.
 
 Bug reports and suggestions are greatly appreciated. They are best reported
-here: \url{https://github.com/xxx/xxx/issues}.
+here: \url{https://github.com/fsavje/gswdesign-R/issues}.
 }
 \references{
 Harshaw, Christopher and Fredrik Sävje and Daniel Spielman and Peng Zhang (2019),
