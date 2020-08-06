@@ -3,4 +3,5 @@
 export(gswdesign_setup)
 export(gswdesign_update)
 export(sample_gs_walk)
+export(sample_many_gs_walk)
 export(set_julia_seed)

@@ -5,7 +5,7 @@
 * Run `devtools::load_all()`, `devtools::test()` and `devtools::check()`
 * Update package information
     - Set new version number in `DESCRIPTION`
-    - Change "distances devel" to "distances VERSION" in `NEWS.md`
+    - Change "gswdesign devel" to "gswdesign VERSION" in `NEWS.md`
     - Update travis and appveyor with current versions
     - Update `cran-comments.md` with correct information
 * Commit and push to github so automatic tests run
@@ -26,5 +26,5 @@
 * Update package information
 	- Add .9000 to the version number in `DESCRIPTION`
 	- Set date in `DESCRIPTION`
-	- Add "distances devel" to `NEWS.md`
+	- Add "gswdesign devel" to `NEWS.md`
 	- Commit and push to github

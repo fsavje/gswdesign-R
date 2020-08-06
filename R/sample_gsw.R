@@ -27,7 +27,7 @@
 #'
 #' @param X
 #'    a n-by-x matrix with covariates to balance
-#' @param lambda
+#' @param phi
 #'    a real value in (0,1) specifying the balancing weight
 #' @param balanced
 #'    set true to run the balanced version of the GSW design
@@ -35,18 +35,30 @@
 #'    a vector of marginal assignment probabilities. If scalar, the probabilities
 #'    for all units are set to the provided value.
 #' @param num_samples
-#'    number of treatment assignments to sample
+#'    number of treatment assignments to sample.
+#'
+#' @return
+#'    \code{sample_gs_walk} returns a single logical vector containing the assignments.
+#'    \code{sample_many_gs_walk} returns a list of \code{num_samples} such vectors.
 #'
 #' @examples
 #' \dontrun{
 #' gswdesign_setup()
 #' set_julia_seed(123456789L)
 #' X <- matrix(rnorm(1000), nrow = 100)
-#' assignments <- sample_gs_walk(X, lambda = 0.3)
+#' assignment <- sample_gs_walk(X, 0.3)
+#' assignments <- sample_many_gs_walk(X, 0.3, 1000L)
 #' }
 #'
 #' @export
-sample_gs_walk <- function(X, lambda, balanced = FALSE, treatment_probs = 0.5, num_samples = 1L) {
+sample_gs_walk <- function(X, phi, balanced = FALSE, treatment_probs = 0.5) {
+  sample_many_gs_walk(X, phi, 1L, balanced, treatment_probs)[[1]]
+}
+
+
+#' @rdname sample_gs_walk
+#' @export
+sample_many_gs_walk <- function(X, phi, num_samples, balanced = FALSE, treatment_probs = 0.5) {
   if (!julia_running())
     stop("Julia is not running. Please call 'gswdesign_setup()'.")
 
@@ -55,6 +67,8 @@ sample_gs_walk <- function(X, lambda, balanced = FALSE, treatment_probs = 0.5, n
   if (is.numeric(X) && !is.double(X))
     storage.mode(X) <- "double"
 
+  X <- unname(X)
+
   stopifnot(
     is.matrix(X),
     is.double(X),
@@ -62,18 +76,16 @@ sample_gs_walk <- function(X, lambda, balanced = FALSE, treatment_probs = 0.5, n
     !any(is.na(X))
   )
 
-  X <- unname(X)
-
-  if (is.numeric(lambda) && !is.double(lambda))
-    storage.mode(lambda) <- "double"
+  if (is.numeric(phi) && !is.double(phi))
+    storage.mode(phi) <- "double"
 
   stopifnot(
-    is.vector(lambda),
-    is.double(lambda),
-    length(lambda) == 1L,
-    !is.na(lambda),
-    lambda > 0.0,
-    lambda < 1.0
+    is.vector(phi),
+    is.double(phi),
+    length(phi) == 1L,
+    !is.na(phi),
+    phi > 0.0,
+    phi < 1.0
   )
 
   stopifnot(
@@ -111,13 +123,13 @@ sample_gs_walk <- function(X, lambda, balanced = FALSE, treatment_probs = 0.5, n
 
   gsw_arg <- list(
     X,
-    lambda,
-    "treatment_probs" = treatment_probs,
+    phi,
+    num_samples,
     "balanced" = balanced,
-    "num_samples" = num_samples
+    "treatment_probs" = treatment_probs
   )
 
-  .gsw_intenv$julia$do.call("sample_gs_walk", gsw_arg, need_return = "R")
+  as.list(.gsw_intenv$julia$do.call("sample_gs_walk", gsw_arg, need_return = "Julia"))
 }
 
 

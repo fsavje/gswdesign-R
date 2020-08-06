@@ -2,27 +2,34 @@
 % Please edit documentation in R/sample_gsw.R
 \name{sample_gs_walk}
 \alias{sample_gs_walk}
+\alias{sample_many_gs_walk}
 \title{Sample from the Gram-Schmidt Walk design.}
 \usage{
-sample_gs_walk(
+sample_gs_walk(X, phi, balanced = FALSE, treatment_probs = 0.5)
+
+sample_many_gs_walk(
   X,
-  lambda,
+  phi,
+  num_samples,
   balanced = FALSE,
-  treatment_probs = 0.5,
-  num_samples = 1L
+  treatment_probs = 0.5
 )
 }
 \arguments{
 \item{X}{a n-by-x matrix with covariates to balance}
 
-\item{lambda}{a real value in (0,1) specifying the balancing weight}
+\item{phi}{a real value in (0,1) specifying the balancing weight}
 
 \item{balanced}{set true to run the balanced version of the GSW design}
 
 \item{treatment_probs}{a vector of marginal assignment probabilities. If scalar, the probabilities
 for all units are set to the provided value.}
 
-\item{num_samples}{number of treatment assignments to sample}
+\item{num_samples}{number of treatment assignments to sample.}
+}
+\value{
+\code{sample_gs_walk} returns a single logical vector containing the assignments.
+   \code{sample_many_gs_walk} returns a list of \code{num_samples} such vectors.
 }
 \description{
 An fast implementation for sampling from the Gram-Schmidt Walk Design.
@@ -34,7 +41,8 @@ system solves and has a recursive component for more effective memory allocation
 gswdesign_setup()
 set_julia_seed(123456789L)
 X <- matrix(rnorm(1000), nrow = 100)
-assignments <- sample_gs_walk(X, lambda = 0.3)
+assignment <- sample_gs_walk(X, 0.3)
+assignments <- sample_many_gs_walk(X, 0.3, 1000L)
 }
 
 }

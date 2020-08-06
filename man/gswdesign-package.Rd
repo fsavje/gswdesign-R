@@ -6,9 +6,10 @@
 \title{gswdesign: The Gram-Schmidt walk design}
 \description{
 Provides wrappers for the Julia package 'GSWDesign', which is a fast
-implementation of the Gram--Schmidt Walk for balancing covariates in
-randomized experiments. The Gram--Schmidt Walk design allows experimenters
-the flexibilty to control the amount of covariate balancing.
+implementation of the Gram-Schmidt Walk for balancing covariates in
+randomized experiments. The Gram-Schmidt Walk design allows experimenters
+to control the trade-off between the amount of covariate balance and robustness
+provided by treatment assignment.
 }
 \details{
 See \code{\link{sample_gs_walk}} for the main function.
@@ -21,7 +22,7 @@ Bug reports and suggestions are greatly appreciated. They are best reported
 here: \url{https://github.com/fsavje/gswdesign-R/issues}.
 }
 \references{
-Harshaw, Christopher and Fredrik Sävje and Daniel Spielman and Peng Zhang (2019),
+Harshaw, Christopher and Fredrik Sävje and Daniel Spielman and Peng Zhang (2020),
    \sQuote{Balancing covariates in randomized experiments using the Gram-Schmidt walk}, arXiv 1911.03071.
    \url{https://arxiv.org/abs/1911.03071}
 }

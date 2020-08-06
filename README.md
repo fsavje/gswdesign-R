@@ -1,9 +1,6 @@
 # gswdesign-R
 
-[![Build Status](https://travis-ci.org/fsavje/gswdesign-R.svg?branch=master)](https://travis-ci.org/fsavje/gswdesign-R)
-
-The `gswdesign` R package provides wrappers for the Julia package [GSWDesign](https://github.com/crharshaw/GSWDesign.jl), which is a fast implementation of the Gram--Schmidt Walk for balancing covariates in randomized experiments. The Gram--Schmidt Walk design allows experimenters the flexibilty to control the amount of covariate balancing.
-
+The `gswdesign` R package provides wrappers for the Julia package [GSWDesign](https://github.com/crharshaw/GSWDesign.jl), which is a fast implementation of the Gram-Schmidt Walk for balancing covariates in randomized experiments. The Gram-Schmidt Walk design allows experimenters to control the trade-off between the amount of covariate balance and robustness provided by treatment assignment. Refer to [Harshaw et al (2020) "Balancing covariates in randomized experiments using the Gram-Schmidt Walk"](https://arxiv.org/abs/1911.03071) for an indepth discussion.
 
 ## How to install
 
